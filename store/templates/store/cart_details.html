@@ -1,0 +1,184 @@
+{% extends 'store/base.html' %}
+{% block body %}
+{% if messages %}
+<div class="body">
+{% for message in messages %}
+<div class="alert alert-info alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+    {{message}}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+{% if added_items or maincombos%}
+<form action="{% url 'store:cart_details' cart.id %}" method="post">
+{% csrf_token %}
+<div class="card">
+    <div class="header">
+        <h2>
+            {% if cart.is_bitsian %}
+            Cart details {% if cart.paid %}(Paid){% endif %} for {{bitsian.name}}
+            {% elif cart.participant %}
+            Cart details {% if cart.paid %}(Paid){% endif %} for {{participant.name}}
+            {% endif %}
+        </h2>
+    </div>
+    <div class="body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover dataTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Price</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                        <th>Item Quantity Left</th>
+                        <th>View details</th>
+                        {% if not cart.paid %}
+                        <th>Remove</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Price</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                        <th>Item Quantity Left</th>
+                        <th>View details</th>
+                        {% if not cart.paid %}
+                        <th>Remove</th>
+                        {% endif %}
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for i in added_items %}
+                    <tr>
+                        <td>{{i.item.item.name}} - {{i.item.item.colour}}</td>
+                        <td>{{i.item.item.price}}</td>
+                        <td>{{i.item.size.name}}</td>
+                        <td>{{i.quantity}}</td>
+                        <td>{{i.item.quantity_left}}</td>
+                        <td>
+                            <a href="{% url 'store:item_details' cart.id i.item.item.id %}">Details</a>
+                        </td>
+                        {% if not cart.paid %}
+                        <td>
+                            <input type="checkbox" name="sale_list" id="{{i.id}}" value="{{i.id}}">
+                            <label for="{{i.id}}"></label>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    {% for maincombo in maincombos %}
+                    <tr>
+                        <td>
+                            {% for mainitem in maincombo.mainitems.all %}
+                            {{mainitem.item.name}} - {{mainitem.size.name}} - {{mainitem.item.colour}} | 
+                            {% endfor %}
+                        </td>
+                        <td>{{maincombo.combo.price}}</td>
+                        <td></td>
+                        <td>1</td>
+                        <td></td>
+                        <td></td>
+                        {% if not cart.paid %}
+                        <td>
+                            <input type="checkbox" name="combo_list" id="{{maincombo.combo.price}} {{maincombo.id}}" value="{{maincombo.id}}">
+                            <label for="{{maincombo.combo.price}} {{maincombo.id}}"></label>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>Total</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        {% if not cart.paid %}
+                        <td></td>
+                        {% endif %}
+                        <td>
+                            {{cart.amount}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {% if not cart.paid %}
+            <button type="submit" class="btn btn-primary btn-lg m-l-15 waves-effect">Remove</button>
+            <br>
+            <br>
+            <a href="{% url 'store:make_cash_payment' cart.id %}" class="btn btn-primary btn-lg m-l-15 waves-effect">Cash Payment</a>
+            <a href="{% url 'store:make_online_payment' cart.id %}" class="btn btn-primary btn-lg m-l-15 waves-effect">Online Payment</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</form>
+{% endif %}
+<div class="card">
+    <div class="header">
+        <h2>
+            {% if cart.is_bitsian %}
+            Cart details {% if cart.paid %}(Paid){% endif %} for {{cart.buyer_id}}
+            {% elif cart.participant %}
+            Cart details {% if cart.paid %}(Paid){% endif %} for {{participant.name}} - {{cart.buyer_id}}
+            {% endif %}
+        </h2>
+        <h2>
+            Unadded Items
+        </h2>
+    </div>
+    <div class="body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover dataTable js-exportable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Price</th>
+                        <th>Colour</th>
+                        <th>View details</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Price</th>
+                        <th>Colour</th>
+                        <th>View details</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for i in unadded_items %}
+                    <tr>
+                        <td>{{i.name}}</td>
+                        <td>{{i.price}}</td>
+                        <td>{{i.colour.name}}</td>
+                        <td>
+                            <a href="{% url 'store:item_details' cart.id i.id %}">Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for combo in combos %}
+                    <tr>
+                        <td>
+                            {% for item in combo.items.all %}
+                                {{item.name}}-{{item.colour}} | 
+                            {% endfor %}
+                             (Combo)
+                        </td>
+                        <td>{{combo.price}}</td>
+                        <td></td>
+                        <td>
+                                <a href="{% url 'store:combo_details' cart.id combo.id %}">Details</a> 
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

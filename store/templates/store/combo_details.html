@@ -1,0 +1,109 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block body %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-info alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+    {{message}}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+{% for item in combo.items.all %}
+<h2>{{item.name}}-{{item.colour}}'s details</h2>
+<div class="container-fluid">
+<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="header">
+                <h2>Front Picture</h2>
+            </div>
+            <div class="body">
+                <div id="carousel-example-generic_2" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner" role="listbox">
+                        <div class="item active">
+                            {% if item.front_pic %}
+                            <div style="display: block; width: 300px; height:300px; background: url({{item.front_pic.url}}) no-repeat center; background-size: contain"></div>
+                            {% comment %} <img src="{{item.front_pic.url}}" alt="No image" height="300" width="300"/> {% endcomment %}
+                            {% else %}
+                            <div style="display: block; width: 300px; height:300px; background: url() no-repeat center; background-size: contain"></div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="header">
+                <h2>Back Picture</h2>
+            </div>
+            <div class="body">
+                <div id="carousel-example-generic_2" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner" role="listbox">
+                        <div class="item active">
+                            {% if item.back_pic %}
+                            <div style="display: block; width: 300px; height:300px; background: url({{item.back_pic.url}}) no-repeat center; background-size: contain"></div>                            
+                            {% comment %} <img src="{{item.back_pic.url}}" alt="No image" height="300" width="300"/> {% endcomment %}
+                            {% else %}
+                            <div style="display: block; width: 300px; height:300px; background: url() no-repeat center; background-size: contain"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+</div>
+<br><br><br>
+{% endfor %}
+<div class="row clearfix">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                                Items' Details
+                            </h2>
+                        </div>
+                    <div class="body">
+                        <div class="table-responsive">
+                                <form action="{% url 'store:add_combo' cart.id combo.id %}" method="post">
+                                {% csrf_token %}
+                            <table class="table table-bordered table-striped table-hover dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Size</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Size</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for item in combo.items.all %}
+                                <tr>
+                                    <td>{{item.name}}-{{item.colour.name}}</td>
+                                    <td>
+                                        <select class="form-control show-tick" name="{{item.id}}" data-live-search="true">
+                                            {% for mainitem in item.mainitem_set.all %}
+                                                <option value="{{mainitem.size}}">{{mainitem.size}}</option>        
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                </tr>    
+                                {% endfor %}
+                            </tbody>
+                            </table>
+                            <button type="submit" class="btn btn-primary m-t-15 waves-effect"name="submit">Confirm</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+{% endblock %}

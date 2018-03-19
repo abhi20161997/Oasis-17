@@ -1,0 +1,109 @@
+{% extends 'ems/base2.html' %}
+
+{% block body %}
+{% load ems_tags %}
+<div class="row">
+{% if messages %}
+{% for message in messages %}
+<div class="body">
+<div class="alert alert-info alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+    <large>{{message}}</large>
+</div>
+</div>
+{% endfor %}
+{% endif %}
+</div>
+
+{% if teams %}
+
+<div class="row clearfix">
+<div class="col-xs-4">
+<form action="{% url 'ems:update_scores' level.id %}" method="post">
+                    {% csrf_token %}
+                            <button class="btn btn-block bg-red waves-effect" type="submit" name="submit" value="leave" title="Press this button to leave this event and all the changes that you made to the scores will be discarded.">Leave Event</button>
+</form>
+                    </div>
+<br><br>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="card">
+                <form action="{% url 'ems:update_scores' level.id %}" method="post">
+                    {% csrf_token %}
+
+                <div class="header">
+                    <h2>
+                       Level {{level.postion}} {{level.name}}
+                    </h2>
+                </div>
+                <div class="body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover dataTable">
+                            <thead>
+                                <tr> 
+                                    <th>Name</th>
+                                    <th>Leader</th>
+                                    {% for param in parameters %}
+                                    <th>{{param.name}} | Max-Value({{param.max_val}})</th>
+                                    {% endfor %}
+                                    <th>Comment</th>
+
+                            </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Leader</th>
+                                    {% for param in parameters %}
+                                    <th>{{param.name}} | Max-Value({{param.max_val}})</th>
+                                    {% endfor %}
+                                    <th>Comment</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for team in teams %}
+                                <tr>
+                                    <td>{{team.team.name}}</td>
+                                    {% if team.team.leader %}
+                                    <td>{{team.team.leader}}</td>
+                                    {% else %}
+                                    <td>{{team.team.leader_bitsian}}</td>
+                                    {% endif %}
+                                    {% for p in parameters %}
+                                    {% if not judge.frozen %}
+                                    <td><input type="number" min="0" step="1" max="{{p.max_val}}" name="{{team.team.id}}-{{p.id}}" value="{% get_it team.score_dict p.id %}" required></td>
+                                    {% else %}
+                                    <td>{% get_it team.score_dict p.id %}</td>
+                                    {% endif %}
+                                    {% endfor %}
+                                    {% if not judge.frozen %}
+                                    <td><input type="text" name="comment-{{team.team.id}}" value="{{team.comment}}" placeholder="Went overtime"></td>
+                                    {% else %}
+                                    <td>{{team.comment}}</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br>
+                    <div class="row">
+                    <div class="col-xs-2">
+                            <button class="btn btn-block bg-blue waves-effect" type="submit" name="submit" value="save">Save</button>
+                    </div>
+                    <div class="col-xs-2">
+                            <button class="btn btn-block bg-blue waves-effect" type="submit" name="submit" value="lock">Save and lock</button>
+                    </div>
+
+                    </div>
+                </div>
+                </form>
+            </div>
+            {% else %}
+            <div class="alert alert-info alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                No teams in this level.
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
